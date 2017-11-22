@@ -24,9 +24,11 @@ $factory->define(Pmptadl\User::class, function (Faker\Generator $faker) {
         'lastName' => $faker->lastName,
         'address' => $faker->address,
         'phone' => $faker->phoneNumber,
-        'organization' => $faker->company,
+        'organization' => rand(1,6),
         'title' => $faker->jobTitle,
         'officeAddress'=>$faker->address,
         'userType' => 'architect'
         ];
 });
+
+

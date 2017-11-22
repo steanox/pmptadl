@@ -70,7 +70,7 @@
 									</td>
 									<td>
 										<button class="btn green">
-											<i class="fa fa-gear"></i>
+											<a href="{{Request::url()}}/{{$discipline->id}}" style="color:white"><i class="fa fa-gear"></i></a>
 										</button>
 									</td>
 

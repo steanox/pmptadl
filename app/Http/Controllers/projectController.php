@@ -3,6 +3,7 @@
 namespace Pmptadl\Http\Controllers;
 
 use Pmptadl\Project;
+use Pmptadl\Organizations;
 use Pmptadl\User;
 use Pmptadl\discipline;
 use Pmptadl\Category;
@@ -46,7 +47,8 @@ class projectController extends Controller
             "js" => array(
                 "js/select2/select2.js",
                 "js/components-dropdowns.js"
-            )
+            ),
+            'organizations' => Organizations::all()
         );
 
         $data['architectList'] = User::where('userType','architect')->orderBy('firstName','asc')->get();
@@ -64,7 +66,8 @@ class projectController extends Controller
     {
 
         $data = array(
-            "title" => ["project","add new user"]
+            "title" => ["project","add new user"],
+            'organizations' => Organizations::all()
         );
 
         return view('add-new-user',$data);
@@ -119,12 +122,14 @@ class projectController extends Controller
 
 
     public function detail($project_name){
-        $disciplineList = discipline::where("projectID",$project_name)->get();
-
+        $disciplineList = discipline::where("projectID",$project_name)->first();
         $data = array(
-            "disciplineID" => $disciplineList[0]->id,
             "title" => ["project",$project_name]
         );
+        if (!empty($disciplineList)){
+
+            $data["disciplineID"] = $disciplineList->id;
+        }
         return view('project-menu',$data);
 
     }

@@ -71,9 +71,11 @@
 							<p><small class="title__menu">Manage<br>Workflow</small></p>
 
 						</li></a>
-
-						<a href="{{Request::url()}}/document-management/{{$disciplineID}}"><li class="project-menu">
-
+						@if(isset($disciplineID))
+									<a href="{{Request::url()}}/document-management/{{$disciplineID}}"><li class="project-menu">
+						@else
+									<a onclick="alert('You need to create discipline first')"><li class="project-menu">
+						@endif
 							<p><i class="fa fa-file-text-o" aria-hidden="true"></i></p>
 
 							<p><small class="title__menu">Document<br>Management</small></p>

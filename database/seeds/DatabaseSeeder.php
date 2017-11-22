@@ -20,6 +20,17 @@ class DatabaseSeeder extends Seeder
             'userType' => 'super'
         ]);
 
+        $organizations = array(
+            array('name'=>'PT 1'),
+            array('name'=>'PT 2'),
+            array('name'=>'PT 3'),
+            array('name'=>'PT 4'),
+            array('name'=>'PT 5'),
+            array('name'=>'PT 6')
+        );
+
+        DB::table('organizations')->insert($organizations);
+
 
 
 

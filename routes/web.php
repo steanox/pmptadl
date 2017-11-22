@@ -107,7 +107,7 @@ Route::group(['middleware' => 'auth'],function(){
 
     Route::post('project/{project_name}/discipline-list/add-new-discipline','disciplineController@storeUser')->name('storeUserDiscipline');
 
-
+    Route::get('project/{project_name}/discipline-list/{disciplineID}','disciplineController@edit')->name('editDiscipline');
 
 
 	Route::get('/project/{project_name}/minutes-list', 'MinuteController@index')->name("minutes");

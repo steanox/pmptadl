@@ -92,8 +92,19 @@
 								</div>
 							</div>
 							<div class="form-group form-md-line-input form-md-floating-label">
-								<input type="text" class="form-control" name="organization" value="{{old('organization')}}">
+								<select name="organization" id="" class="form-control">
+									@foreach($organizations as $organization)
+										<option value="{{$organization->id}}"
+										<?php  if (old('organization')){
+											    if (old('organization') == $organization->id) echo 'selected';
+												}
+										?>
+										>{{$organization->name}}</option>
+									@endforeach
+								</select>
 								<label for="form_control_1">Organization</label>
+
+
 							</div>
 							<div class="form-group form-md-line-input form-md-floating-label">
 								<input type="text" class="form-control" name="mainTitle" value="{{old('mainTitle')}}">

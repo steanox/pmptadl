@@ -31,7 +31,7 @@
 			<h3 class="page-title">
 			{{title_case($title[1])}} <small></small>
 			</h3>
-			<div class="page-bar">
+			<dyouiv class="page-bar">
 				<ul class="page-breadcrumb">
 					<li>
 						<i class="fa fa-home"></i>
@@ -49,7 +49,7 @@
 					<a href="{{Request::url()}}/upload-document" class="btn red">+ Upload New Doc</a>
 
 				</div> 
-			</div>
+			</dyouiv>
 			<div class="row ">
 				<div class="col-md-3">
 					<select class="form-control" id="disciplineList">

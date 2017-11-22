@@ -84,8 +84,9 @@ class disciplineDocumentController extends Controller
 
 
         $documentFile = new disciplineDocumentFile();
-        $documentFile->fileName = urlencode($request->file('documentFile')->getClientOriginalName());
-        $documentFile->fileURL = $request->file('documentFile')->store('disciplineDocument','p1');
+        $filename =  preg_replace("/[^A-Za-z0-9]/", "", urlencode($request->file('documentFile')->getClientOriginalName()));
+        $documentFile->fileName = $filename;
+        $documentFile->fileURL = $request->file('documentFile')->storeAs('disciplineDocument',$filename,'p1');
         $documentFile->comment = $request->comment;
         $documentFile->uploadBy = Auth::user()->id;
         $documentFile->reviewBy = json_encode($request->users);

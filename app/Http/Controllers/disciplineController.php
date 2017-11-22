@@ -13,8 +13,8 @@ class disciplineController extends Controller
 
 
 
-   		$data = array(
-   		    "disciplines" => discipline::all(),
+        $data = array(
+   		    "disciplines" => discipline::where('projectID',$project_name)->get(),
             "title" => array(
                 "project",
                 $project_name,
@@ -64,6 +64,45 @@ class disciplineController extends Controller
         );
 
       return view('create-discipline',$data);
+
+    }
+
+    public function edit($project_name,$disciplineID){
+
+        $data = array(
+            "project" =>  $project_name,
+            "discipline" => Discipline::where("id",$disciplineID)->first(),
+            "title" => array(
+                "project",
+                $project_name,
+                "discipline list",
+                $disciplineID),
+            "userlist" => User::orderBy('name',"asc")->get(),
+            "css" => array(
+                "js/select2/select2.css",
+                "js/jquery-textext-master/src/css/textext.core.css",
+                "js/jquery-textext-master/src/css/textext.plugin.autocomplete.css",
+                "js/jquery-textext-master/src/css/textext.plugin.tags.css"
+            ),
+            "js" => array(
+                "js/components-dropdowns.js",
+                "js/jquery-validation/js/jquery.validate.min.js",
+                "js/jquery-validation/js/additional-methods.min.js",
+                "js/select2/select2.js",
+                "js/bootstrap-wizard/jquery.bootstrap.wizard.min.js",
+                "js/form-wizard.js",
+                "js/jquery-textext-master/src/js/textext.core.js",
+                "js/jquery-textext-master/src/js/textext.plugin.tags.js",
+                "js/jquery-textext-master/src/js/textext.plugin.autocomplete.js"
+            )
+        );
+
+        $data["discipline"]["userList"] = json_decode($data["discipline"]["userList"]);
+
+        return view('edit-discipline',$data);
+
+
+
 
     }
 
