@@ -107,7 +107,7 @@ class projectController extends Controller
         $newProject->structureName      = $request->structureName;
         $newProject->mepName            = $request->mepName;
         $newProject->qsName             = $request->qsName;
-        $newProject->contractorName     = $request->contactorName;
+        $newProject->contractorName     = $request->contractorName;
         
         $newProject->createdBy   = '{"id":'.Auth::user()->id.',"name":"'.Auth::user()->name.'"}';
 

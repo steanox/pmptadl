@@ -3,6 +3,7 @@
 namespace Pmptadl\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Pmptadl\Organizations;
 use PhpParser\Node\Expr\Array_;
 use Pmptadl\discipline;
 use Pmptadl\User;
@@ -60,7 +61,8 @@ class disciplineController extends Controller
 				"js/jquery-textext-master/src/js/textext.core.js",
 				"js/jquery-textext-master/src/js/textext.plugin.tags.js",
 				"js/jquery-textext-master/src/js/textext.plugin.autocomplete.js"
-            )
+            ),
+            'organizations' => Organizations::all()
         );
 
       return view('create-discipline',$data);
@@ -116,15 +118,17 @@ class disciplineController extends Controller
 
 
 
+
         $newDicipline = new Discipline();
         $userList = [];
 
         foreach($request->user as $key=>$value){
             array_push($userList,array(
                 $value,
-                $request->userRole[$key]
+                ($request->userRole[$key] == 1) ? "review" : "approve"
             ));
         }
+
 
 
 
@@ -132,6 +136,8 @@ class disciplineController extends Controller
         $newDicipline->projectID = $projectName;
         $newDicipline->initiatorName = User::where('id',$request->initiatorName)->get()[0]->name;
         $newDicipline->userList = json_encode($userList);
+
+
 
         if($newDicipline->save()){
             return redirect()->route('disciplineList', $request->segment(2));

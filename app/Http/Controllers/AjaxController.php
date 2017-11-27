@@ -29,4 +29,12 @@ class AjaxController extends Controller
 
         return response()->json($projects);
     }
+
+    function getUserFromOrganization($organizationID){
+        $user = User::where('organization',$organizationID)->orderBy('name','asc')->get();
+        header('Content-Type: application/json');
+
+        return response()->json($user);
+
+    }
 }

@@ -87,59 +87,92 @@
 								<label for="form_control_1">GFA</label>
 							</div>
 							<div class="form-group form-md-line-input form-md-floating-label">
-								<select class="form-control  select2me" name="clientName" data-placeholder="Select Client">
-									<option value=""></option>
-									@foreach ($architectList as $architect)
-										<option value="{{$architect->id }}">{{$architect->firstName.' '.$architect->lastName }}</option>
+								<select name="clientName" id="" class="form-control">
+									@foreach($organizations as $organization)
+										<option value="{{$organization->id}}"
+                                        <?php  if (old('clientName')){
+                                            if (old('clientName') == $organization->id) echo 'selected';
+                                        }
+                                            ?>
+										>{{$organization->name}}</option>
 									@endforeach
 								</select>
 								<label for="form_control_1" style="top:-4px !important">Client</label>
 							</div>
 							<div class="form-group form-md-line-input form-md-floating-label">
-								<select class="form-control  select2me" name="architectName" data-placeholder="Select">
-									<option value=""></option>
-									
-										<option value="PT Arsitek Indah">PT Arsitek Indah</option>
-										<option value="PT Rancangan Karya">PT Rancangan Karya</option>
-									
+
+								<select name="architectName" id="" class="form-control">
+									@foreach($organizations as $organization)
+										<option value="{{$organization->id}}"
+                                        <?php  if (old('architectName')){
+                                            if (old('architectName') == $organization->id) echo 'selected';
+                                        }
+                                            ?>
+										>{{$organization->name}}</option>
+									@endforeach
 								</select>
 								<label for="form_control_1" style="top:-4px !important">Architect</label>
 							</div>
 							<div class="form-group form-md-line-input form-md-floating-label">
-								<!--<input type="text" class="form-control" name="projectStructure" value="{{old('projectStructure')}}">-->
-								<select class="form-control  select2me" name="structureName" data-placeholder="Select Structure">
-									<option value=""></option>
-									@foreach ($architectList as $architect)
-										<option value="{{$architect->id }}" {{ (old("structureName") == $architect->id ? "selected":"") }}>{{$architect->firstName.' '.$architect->lastName }}</option>
+
+								<select name="structureName" id="" class="form-control">
+									@foreach($organizations as $organization)
+										<option value="{{$organization->id}}"
+										<?php  if (old('structureName')){
+											if (old('structureName') == $organization->id) echo 'selected';
+										}
+											?>
+										>{{$organization->name}}</option>
 									@endforeach
 								</select>
+
 								<label for="form_control_1" style="top:-4px !important">Structure</label>
 							</div>
 							<div class="form-group form-md-line-input form-md-floating-label">
-								<select class="form-control  select2me"  name="mepName" data-placeholder="Select Client">
-									<option value=""></option>
-									@foreach ($architectList as $architect)
-										<option value="{{$architect->id }}" {{ (old("mepName") == $architect->id ? "selected":"") }}>{{$architect->firstName.' '.$architect->lastName }}</option>
+
+
+								<select name="mepName" id="" class="form-control">
+									@foreach($organizations as $organization)
+										<option value="{{$organization->id}}"
+                                        <?php  if (old('mepName')){
+                                            if (old('mepName') == $organization->id) echo 'selected';
+                                        }
+                                            ?>
+										>{{$organization->name}}</option>
 									@endforeach
 								</select>
+
 								<label for="form_control_1" style="top:-4px !important">MEP</label>
 							</div>
 							<div class="form-group form-md-line-input form-md-floating-label">
-								<select class="form-control  select2me" name="qsName"  data-placeholder="Select Client">
-									<option value=""></option>
-									@foreach ($architectList as $architect)
-										<option value="{{$architect->id }}" {{ (old("qsName") == $architect->id ? "selected":"") }}>{{$architect->firstName.' '.$architect->lastName }}</option>
+
+								<select name="qsName" id="" class="form-control">
+									@foreach($organizations as $organization)
+										<option value="{{$organization->id}}"
+                                        <?php  if (old('qsName')){
+                                            if (old('qsName') == $organization->id) echo 'selected';
+                                        }
+                                            ?>
+										>{{$organization->name}}</option>
 									@endforeach
 								</select>
+
 								<label for="form_control_1" style="top:-4px !important">QS</label>
 							</div>
 							<div class="form-group form-md-line-input form-md-floating-label">
-								<select class="form-control  select2me" name="contractorName"  data-placeholder="Select Client">
-									<option value=""></option>
-									@foreach ($architectList as $architect)
-										<option value="{{$architect->id }}" {{ (old("contractorName") == $architect->id ? "selected":"") }}>{{$architect->firstName.' '.$architect->lastName }}</option>
+
+
+								<select name="contractorName" id="" class="form-control">
+									@foreach($organizations as $organization)
+										<option value="{{$organization->id}}"
+                                        <?php  if (old('contractorName')){
+                                            if (old('contractorName') == $organization->id) echo 'selected';
+                                        }
+                                            ?>
+										>{{$organization->name}}</option>
 									@endforeach
 								</select>
+
 								<label for="form_control_1" style="top:-4px !important">Main Contractor</label>
 							</div>
 							<div class="form-actions noborder">

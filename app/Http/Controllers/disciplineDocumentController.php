@@ -12,19 +12,26 @@ use Pmptadl\disciplineDocumentFile;
 
 class disciplineDocumentController extends Controller
 {
-    public function uploadDocument($project_name,$disciplineID){
+    public function uploadDocument($project_name, $disciplineID)
+    {
+        if (discipline::where("id",$disciplineID)->first()->initiatorName != Auth::user()->name){
+            return redirect()->back()->withErrors(['message' => 'You are not allowed to upload document']);
+        }
 
-        $disciplineList = discipline::where("projectID",$project_name)->get();
-        $userList = $this->getDecodedUsers($disciplineList);
+        $getDiscipline = discipline::where("id", $disciplineID)->first();
+
+        $firstFileName = $getDiscipline->disciplineName . '-' . $getDiscipline->projectID .'-1';
 
 
+
+        $userList = $this->getDecodedUsers($getDiscipline);
 
 
         $data = array(
             "projectName" => $project_name,
-            "disciplineID" =>$disciplineID,
-            "title" => ["project",$project_name,"document management","upload document"],
-            "disciplineList" => $this->getAllDiscipline($disciplineList),
+            "disciplineID" => $disciplineID,
+            "firstFileName" => $firstFileName,
+            "title" => ["project", $project_name, "document management", "upload document"],
             "userList" => $userList,
             "css" => array(
                 "js/jquery-textext-master/src/css/textext.core.css",
@@ -41,74 +48,84 @@ class disciplineDocumentController extends Controller
             )
         );
 
-
-
-
-
-        return view("upload-document",$data);
+        return view("upload-document", $data);
     }
 
 
-    public function storeDocument(Request $request,$projectName){
+    public function storeDocument(Request $request, $projectName)
+    {
         $this->validate($request, [
-            'discipline' => 'required',
-            'comment'=>'required',
+            'deadline' => 'required|after_or_equal:today',
+            'comment' => 'required',
             'documentFile' => 'required',
-            'users'=> 'required'
+            'users' => 'required'
         ]);
 
 
 
-
         $disciplineDocument = new disciplineDocument();
-        $disciplineDocument->status = "Assigned";
-        $disciplineDocument->disciplineID =  $request->discipline;
+        $disciplineDocument->status = $request->status;
+        $disciplineDocument->deadline =  date('Y-m-d H:i:s',strtotime($request->deadline));
+        $disciplineDocument->disciplineID = $request->disciplineID;
         $disciplineDocument->firstUploadBy = Auth::user()->id;
         $disciplineDocument->lastUploadBy = Auth::user()->id;
         $disciplineDocument->approvalBy = "";
 
-        if($disciplineDocument->save()){
 
-            if ($this->handleDocumentFile($request,$disciplineDocument)){
-                return redirect()->route('documentList', ["project_name" => $request->segment(2),"disciplineID"=>$disciplineDocument->disciplineID]);
+
+        if ($disciplineDocument->save()) {
+
+            if ($this->handleDocumentFile($request, $disciplineDocument)) {
+                foreach ($request->users as $user){
+                    $this->handleMail(User::where("name",$user)->first(),discipline::where("id",$request->disciplineID)->first(),$request->firstFileName);
+                }
+                return redirect()->route('documentList', ["project_name" => $request->segment(2), "disciplineID" => $disciplineDocument->disciplineID]);
             }
 
-        }else{
-            print_r("failed");
+        } else {
+            return redirect()->back()->withErrors(['message' => 'something went wrong please try again later']);
         }
 
     }
 
-    private function handleDocumentFile(Request $request,$disciplineDocument){
-
+    private function handleDocumentFile(Request $request, $disciplineDocument)
+    {
 
 
         $documentFile = new disciplineDocumentFile();
-        $filename =  preg_replace("/[^A-Za-z0-9]/", "", urlencode($request->file('documentFile')->getClientOriginalName()));
-        $documentFile->fileName = $filename;
-        $documentFile->fileURL = $request->file('documentFile')->storeAs('disciplineDocument',$filename,'p1');
+        $filename = preg_replace("/[^A-Za-z0-9]/", "", urlencode($request->file('documentFile')->getClientOriginalName()));
+        $documentFile->fileName = $request->firstFileName;
+        $documentFile->fileURL = $request->file('documentFile')->storeAs('disciplineDocument', $filename, 'p1');
+        $documentFile->deadline = date('Y-m-d H:i:s',strtotime($request->deadline));
         $documentFile->comment = $request->comment;
         $documentFile->uploadBy = Auth::user()->id;
         $documentFile->reviewBy = json_encode($request->users);
         $documentFile->disciplineDocumentId = $disciplineDocument->id;
 
-        if($documentFile->save()){
+        if ($documentFile->save()) {
+
+
             return true;
-        }else{
-            print_r("failed save file");
+        } else {
+            return redirect()->back()->withErrors(['message' => 'something went wrong please try again later']);
         }
 
 
     }
 
-    public function reviewDocument($projectName,$disciplineID,$documentID,$documentFileID){
-        $documentFile = disciplineDocumentFile::where("id",$documentFileID)->first();
-        $document = disciplineDocument::where("id",$documentID)->first();
+    private function handleMail($user,$discipline,$fileNamex){
+
+    }
+
+    public function reviewDocument($projectName, $disciplineID, $documentID, $documentFileID)
+    {
+        $documentFile = disciplineDocumentFile::where("id", $documentFileID)->first();
+        $document = disciplineDocument::where("id", $documentID)->first();
 
         //CHECK DOCUMENT STATUS
-        if($document->status == "Approved"){
+        if ($document->status == "Approved") {
 
-            return redirect()->back()->withErrors(['message'=>'This document no longer can be reviewed']);
+            return redirect()->back()->withErrors(['message' => 'This document no longer can be reviewed']);
         }
 
 
@@ -116,27 +133,31 @@ class disciplineDocumentController extends Controller
         $reviewerList = json_decode($documentFile->reviewBy);
         $username = Auth::user()->name;
 
-        if(!in_array($username,$reviewerList )){
+        if (!in_array($username, $reviewerList)) {
 
-            return redirect()->back()->withErrors(['message'=>'You are not permitted to review this document']);
+            return redirect()->back()->withErrors(['message' => 'You are not permitted to review this document']);
         }
 
-        $discipline =  discipline::where('id',$disciplineID)->get();
+        $discipline = discipline::where('id', $disciplineID)->first();
+        $documentTotal = count(disciplineDocumentFile::where("disciplineDocumentID",$documentFileID)->get());
+        $firstFileName = $discipline->disciplineName . '-' . $discipline->projectID .'-'.($documentTotal + 1);
+
 
 
         $userList = $this->getDecodedUsers($discipline);
 
         $data = array(
-            "projectName" =>  $projectName,
+            "projectName" => $projectName,
             "disciplineID" => $disciplineID,
+            "firstFileName" => $firstFileName,
             "disciplineDocumentID" => $documentID,
             "title" => array(
                 "project",
                 $projectName,
                 "document-management",
-                $discipline[0]->disciplineName,
+                $discipline->disciplineName,
                 "review"
-                ),
+            ),
             "userList" => $userList,
             "css" => array(
                 "js/select2/select2.css",
@@ -157,32 +178,39 @@ class disciplineDocumentController extends Controller
             )
         );
 
-        return view('review-document',$data);
+        return view('review-document', $data);
 
     }
 
 
-
-    public function handleDocumentUpdateFile(Request $request,$projectName,$disciplineID,$disciplineDocumentID){
+    public function handleDocumentUpdateFile(Request $request, $projectName, $disciplineID, $disciplineDocumentID)
+    {
 
 
         $this->validate($request, [
+            'deadline' => 'required|after_or_equal:today',
             'documentFile' => 'required',
-            'users'=> 'required'
+            'users' => 'required'
         ]);
 
         $disciplineDocument = disciplineDocument::find($disciplineDocumentID);
         $disciplineDocument->lastUploadBy = Auth::user()->id;
-        $disciplineDocument->status = ($request->comment)? "Reviewed with comment" : "Reviewed with no comment";
 
-        if($disciplineDocument->save()){
+        $disciplineDocument->deadline = date('Y-m-d H:i:s',strtotime($request->deadline));
+        $disciplineDocument->status =  $request->status;
 
-            if ($this->handleDocumentFile($request,$disciplineDocument)){
-                return redirect()->route('documentList', ["project_name" => $request->segment(2),"disciplineID"=>$disciplineDocument->disciplineID]);
+
+
+        if ($disciplineDocument->save()) {
+
+            if ($this->handleDocumentFile($request, $disciplineDocument)) {
+                return redirect()->route('documentList', ["project_name" => $request->segment(2), "disciplineID" => $disciplineDocument->disciplineID]);
+            }else{
+                return redirect()->back()->withErrors(['message' => 'something went wrong please try again later']);
             }
 
-        }else{
-            print_r("failed");
+        } else {
+            return redirect()->back()->withErrors(['message' => 'something went wrong please try again later']);
         }
 
     }
@@ -192,37 +220,38 @@ class disciplineDocumentController extends Controller
      * @param $disciplineList
      * @return array
      */
-    private function getDecodedUsers($disciplineList){
+    private function getDecodedUsers($disciplineList)
+    {
 
         $userList = [];
         $key = [];
 
+         $userListDecoded = json_decode($disciplineList->userList);
 
-        foreach ($disciplineList as $discipline){
-            $userListDecoded = json_decode($discipline->userList);
+            foreach ($userListDecoded as $user) {
+                if (!in_array($user[0], $userList)) {
 
-            foreach ($userListDecoded as $user){
-                if (!in_array($user[0],$userList)){
-                    array_push($userList,array(
-                        "role" => ($user[1] == 1)? "Review" : "Approve",
+                    array_push($userList, array(
+                        "role" => ($user[1] == "review") ? "Review" : "Approve",
                         "name" => $user[0]
                     ));
                 }
-                array_push($key,$user[0]);
+                array_push($key, $user[0]);
             }
-        }
+
         return $userList;
     }
 
-     private function getAllDiscipline($disciplineList){
+    private function getAllDiscipline($disciplineList)
+    {
         $disciplines = [];
 
-        foreach ($disciplineList as $discipline){
+        foreach ($disciplineList as $discipline) {
 
-                array_push($disciplines,array(
-                    "id" => $discipline->id,
-                    "disciplineName" => $discipline->disciplineName
-                ));
+            array_push($disciplines, array(
+                "id" => $discipline->id,
+                "disciplineName" => $discipline->disciplineName
+            ));
 
 
         }
@@ -231,29 +260,30 @@ class disciplineDocumentController extends Controller
 
     }
 
-    public function approveDocument($projectName,$disciplineID,$disciplineDocumentID,$disciplineDocumentFileID){
+    public function approveDocument($projectName, $disciplineID, $disciplineDocumentID, $disciplineDocumentFileID)
+    {
         //check if user has the role to approve
-        $discipline = discipline::where('id',$disciplineID)->first();
+        $discipline = discipline::where('id', $disciplineID)->first();
         $disciplineUserList = json_decode($discipline->userList);
-        $disciplineDocumentFile = disciplineDocumentFile::where("id",$disciplineDocumentFileID)->first();
+        $disciplineDocumentFile = disciplineDocumentFile::where("id", $disciplineDocumentFileID)->first();
         $disciplineDocumentFileUserList = json_decode($disciplineDocumentFile->reviewBy);
 
         $userName = Auth::user()->name;
 
-        if(!in_array($userName,$disciplineDocumentFileUserList)){
+        if (!in_array($userName, $disciplineDocumentFileUserList)) {
 
-            return redirect()->back()->withErrors(['message'=>'You are not permitted to approve this document']);
+            return redirect()->back()->withErrors(['message' => 'You are not permitted to approve this document']);
 
-        }else if(!$this->isEligibleToApprove($userName,$disciplineUserList)){
+        } else if (!$this->isEligibleToApprove($userName, $disciplineUserList)) {
 
-            return redirect()->back()->withErrors(['message'=>'You are not eligible to approve this document']);
+            return redirect()->back()->withErrors(['message' => 'You are not eligible to approve this document']);
 
-        }else{
-            $disciplineDocument = disciplineDocument::where("id",$disciplineDocumentID)->first();
+        } else {
+            $disciplineDocument = disciplineDocument::where("id", $disciplineDocumentID)->first();
             $disciplineDocument->status = "Approved";
             $disciplineDocument->approvalBy = $userName;
 
-            if($disciplineDocument->save()){
+            if ($disciplineDocument->save()) {
                 echo '<script>Success approve documents</script>';
                 return redirect()->back();
             }
@@ -262,12 +292,11 @@ class disciplineDocumentController extends Controller
     }
 
 
-
-
-    private function isEligibleToApprove($username,$userList){
-        foreach($userList as $user){
-            if($user[0] == $username){
-                if($user[1] == 2){
+    private function isEligibleToApprove($username, $userList)
+    {
+        foreach ($userList as $user) {
+            if ($user[0] == $username) {
+                if ($user[1] == 2) {
                     return true;
                 }
             }

@@ -15,7 +15,7 @@
 Route::get('/login',"Auth\LoginController@showLoginForm")->name('login');
 Route::post('/password/reset ',"Auth\ResetPasswordController@reset");
 
-Route::get('/password/reset ',"Auth\ForgotPasswordController@showLinkRequestForm")->name('password.request');
+Route::get('/password/reset',"Auth\ForgotPasswordController@showLinkRequestForm")->name('password.request');
 Route::post('/login',"Auth\LoginController@login");
 
 Route::get('/test',function(){
@@ -142,6 +142,7 @@ Route::group(['middleware' => 'auth'],function(){
 
 	Route::get('/ajax/getAllUser',"AjaxController@getAllUser");
 	Route::get('/ajax/getAllProject',"AjaxController@getAllProject");
+    Route::get('/ajax/getUserFromOrganization/{organizationID}',"AjaxController@getUserFromOrganization");
 
 	//Route::post('/project/document-management/create-stage',"ProjectWorkflowController@initStage")->name('initStage');
 

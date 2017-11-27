@@ -20,6 +20,14 @@ class DatabaseSeeder extends Seeder
             'userType' => 'super'
         ]);
 
+        DB::table('users')->insert([
+            'name' => 'oktagandajaya',
+            'email' => 'admin2@admin.com',
+            'password' => bcrypt('secret2'),
+            'remember_token' => 'goynwu8EcYE8BexWMxmBjKN7hczveuFixMRUfx8875Vg41aQUHkplkbFljq2',
+            'userType' => 'super'
+        ]);
+
         $organizations = array(
             array('name'=>'PT 1'),
             array('name'=>'PT 2'),

@@ -11,9 +11,12 @@ use Carbon\Carbon;
 
 class DocumentManagement extends Controller
 {
+
+
     public function index($project_name,$disciplineID){
 
 
+        $dateNow = Carbon::now();
 
 
         $disciplineList = discipline::where("projectID",$project_name)->get();
@@ -23,6 +26,7 @@ class DocumentManagement extends Controller
             "projectName" => $project_name,
             "disciplineList" => $this->getAllDiscipline($disciplineList),
             "disciplineID" => $disciplineID,
+            "initiator" => discipline::where("id",$disciplineID)->first()->initiatorName,
             "css" => array(
                 "js/datatables/plugins/bootstrap/dataTables.bootstrap.css"
             ),
@@ -39,13 +43,17 @@ class DocumentManagement extends Controller
 
         foreach ($documents as $key=>$document){
             $documentFile = disciplineDocumentFile::where("disciplineDocumentId",$document->id)->orderBy("created_at","desc")->get();
+            $deadline  = new Carbon($document->deadline);
+
+
 
             $firstUpload =  new Carbon($document->created_at) ;
             $lastUpload = new Carbon($document->lastUpload);
 
             $value = array(
                 "documentID" => $document->id,
-                "status" => $document->status,
+                "status" => ($document->status == "Approve")? "Need Approval" : "Need Review",
+                "deadlineStatus" => ($dateNow->gt($deadline))? "Out of Deadline" : "",
                 "statusColor" => ($document->status == "Approved")? "#73ff73" : "orange",
                 "statusIcon" => $this->getIcon($document->status),
                 "file" => $documentFile,
@@ -54,6 +62,10 @@ class DocumentManagement extends Controller
                 "firstUploadBy" => User::where("id",$document->firstUploadBy)->first(),
                 "lastUploadBy" => User::where("id",$documentFile[0]->uploadBy)->first()
             );
+
+            if($value["deadlineStatus"] != ""){
+                $value["statusColor"] = "red";
+            }
 
             array_push($data["documents"],$value);
 
@@ -88,7 +100,8 @@ class DocumentManagement extends Controller
 
             array_push($disciplines,array(
                 "id" => $discipline->id,
-                "disciplineName" => $discipline->disciplineName
+                "disciplineName" => $discipline->disciplineName,
+                "initiatorName" => $discipline->initiatorName
             ));
 
 
@@ -100,7 +113,7 @@ class DocumentManagement extends Controller
 
     private function getIcon($status){
         switch ($status){
-            case "Assigned":
+            case "Review":
                 return "fa-cog fa-spin fa-3x fa-fw";
             case "NoComment":
                 return "fa-comment-o";
